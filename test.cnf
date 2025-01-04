@@ -1,0 +1,8 @@
+c Just a test cnf file!
+c     +---- number of variables
+c     | +-- number of clauses 
+c     V V
+p cnf 3 5
+1 2 0
+-2 -1 0
+3 0
