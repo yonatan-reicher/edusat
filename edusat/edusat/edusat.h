@@ -19,6 +19,7 @@ typedef int Var;
 typedef int Lit;
 typedef vector<Lit> clause_t;
 typedef clause_t::iterator clause_it;
+// The ordered set of decisions taken for which literals are choosen.
 typedef vector<Lit> trail_t;
 
 #define Assert(exp) AssertCheck(exp, __func__, __LINE__)
@@ -47,6 +48,7 @@ enum class VAR_DEC_HEURISTIC {
 
 VAR_DEC_HEURISTIC VarDecHeuristic = VAR_DEC_HEURISTIC::MINISAT;
 
+// Heuristics for choosing values for variables when faced with a decision.
 enum class VAL_DEC_HEURISTIC {
 	/* Same as last value. Initially false*/
 	PHASESAVING, 
@@ -86,7 +88,9 @@ enum class ClauseState {
 enum class SolverState{
 	UNSAT,
 	SAT,
+    // Current partial assignment is conflict.
 	CONFLICT, 
+    // Still solving
 	UNDEF,
 	TIMEOUT
 } ;
