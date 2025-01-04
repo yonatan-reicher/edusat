@@ -410,6 +410,7 @@ assumes: 1) no clause should have the same literal twice. To guarantee this we r
 This is Alg. 1 from "HaifaSat: a SAT solver based on an Abstraction/Refinement model" 
 ********************************************************************************************************************/
 
+// TODO: Why is this not by reference????
 int Solver::analyze(const Clause conflicting) {
 	if (verbose_now()) cout << "analyze" << endl;
 	Clause	current_clause = conflicting, 

@@ -170,6 +170,7 @@ public:
 	int get_lw_lit() {return c[lw];}
 	int get_rw_lit() {return c[rw];}
 	int  lit(int i) {return c[i];} 		
+    // TODO: What does this function do?
 	inline ClauseState next_not_false(bool is_left_watch, Lit other_watch, bool binary, int& loc); 
 	size_t size() {return c.size();}
 	void reset() { c.clear(); }	
@@ -194,7 +195,7 @@ public:
 
 class Solver {
 	vector<Clause> cnf; // clause DB. 
-	vector<int> unaries; 
+	vector<int> unaries;  // unary clauses.
 	trail_t trail;  // assignment stack	
 	vector<int> separators; // indices into trail showing increase in dl 	
 	vector<int> LitScore; // literal => frequency of this literal (# appearances in all clauses). 
@@ -285,7 +286,9 @@ public:
 	}
 	void read_cnf(ifstream& in);
 
+    /* Solves the loaded CNF. */
 	SolverState _solve();
+    /* Solves and also prints the solution. */
 	void solve();
 
 	
