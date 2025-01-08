@@ -46,7 +46,7 @@ void Solver::read_cnf(ifstream& in) {
 	set<Lit> s;
 	Clause c;
 
-
+    // Skip comments
 	while (in.peek() == 'c') skipLine(in);
 
 	if (!match(in, "p cnf")) Abort("Expecting `p cnf' in the beginning of the input file", 1);
@@ -197,7 +197,7 @@ void Solver::bumpLitScore(int lit_idx) {
 }
 
 void Solver::add_clause(Clause& c, int l, int r) {	
-	Assert(c.size() > 1) ;
+	Assert(c.size() > 1) ; // This function is only for non-unary clauses.
 	c.lw_set(l);
 	c.rw_set(r);
 	int loc = static_cast<int>(cnf.size());  // the first is in location 0 in cnf	
