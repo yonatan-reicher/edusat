@@ -95,11 +95,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cpuTime.cpp" />
     <ClCompile Include="edusat.cpp" />
+    <ClCompile Include="edusat_incremental.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="options.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cpuTime.h" />
     <ClInclude Include="edusat.h" />
+    <ClInclude Include="edusat_incremental.h" />
     <ClInclude Include="options.h" />
   </ItemGroup>
   <ItemGroup>

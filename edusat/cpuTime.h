@@ -1,0 +1,3 @@
+#pragma once
+
+double cpuTime();
