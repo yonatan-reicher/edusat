@@ -43,7 +43,7 @@ static int parseInt(ifstream& in) {
 void Solver::read_cnf(ifstream& in) {
 	int i;
 	unsigned int vars, clauses, unary = 0;
-	set<Lit> s;
+	set<Lit> c_lits;
 	Clause c;
 
     // Skip comments
@@ -56,15 +56,26 @@ void Solver::read_cnf(ifstream& in) {
 	cout << "vars: " << vars << " clauses: " << clauses << endl;
 	cnf.reserve(clauses);
 
+    // We add a new variable for each clause - these are going to be our
+    // clause selector.
+    first_selector = vars + 1;
+    vars += clauses;
+
 	set_nvars(vars);
 	set_nclauses(clauses);
 	initialize();
 
+    int next_selector = first_selector;
+
 	while (in.good() && in.peek() != EOF) {
 		i = parseInt(in);
-		if (i == 0) {
-			c.cl().resize(s.size());
-			copy(s.begin(), s.end(), c.cl().begin());
+		if (i == 0) { // end of clause
+            // Add the selector literal
+            Var selector = next_selector++;
+            c_lits.insert(v2l(-selector));
+
+            c.cl().resize(c_lits.size());
+			copy(c_lits.begin(), c_lits.end(), c.cl().begin());
 			switch (c.size()) {
 			case 0: {
 				stringstream num;  // this allows to convert int to string
@@ -87,14 +98,14 @@ void Solver::read_cnf(ifstream& in) {
 			default: add_clause(c, 0, 1);
 			}
 			c.reset();
-			s.clear();
+			c_lits.clear();
 			continue;
 		}
 		if (Abs(i) > vars) Abort("Literal index larger than declared on the first line", 1);
 		if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) bumpVarScore(abs(i));
 		i = v2l(i);		
 		if (ValDecHeuristic == VAL_DEC_HEURISTIC::LITSCORE) bumpLitScore(i);
-		s.insert(i);
+		c_lits.insert(i);
 	}	
 	if (VarDecHeuristic == VAR_DEC_HEURISTIC::MINISAT) reset_iterators();
 	cout << "Read " << cnf_size() << " clauses in " << cpuTime() - begin_time << " secs." << endl << "Solving..." << endl;
@@ -121,7 +132,6 @@ inline void Solver::reset_iterators(double where) {
 }
 
 void Solver::initialize() {	
-	
 	state.resize(nvars + 1, VarState::V_UNASSIGNED);
 	prev_state.resize(nvars + 1, VarState::V_FALSE); // we set initial assignment with phase-saving to false. 
 	antecedent.resize(nvars + 1, -1);	
@@ -566,7 +576,8 @@ void Solver::restart() {
 }
 
 void Solver::solve() { 
-	SolverState res = _solve(); 	
+    next_selector_to_activate = first_selector;
+    SolverState res = incremental_solve();
 	Assert(res == SolverState::SAT || res == SolverState::UNSAT || res == SolverState::TIMEOUT);
 	S.print_stats();
 	switch (res) {
@@ -586,6 +597,35 @@ void Solver::solve() {
 		return;
 	}	
 	return;
+}
+
+SolverState Solver::incremental_solve() {
+    if (verbose_now()) cout << "SELECTORS: up to " << next_selector_to_activate - first_selector << endl;
+	SolverState res = _solve(); 	
+	Assert(res == SolverState::SAT || res == SolverState::UNSAT || res == SolverState::TIMEOUT);
+
+    if (verbose_now()) {
+        const char* res_string = 
+            res == SolverState::SAT ? "SAT" : 
+            res == SolverState::UNSAT ? "UNSAT" : 
+            res == SolverState::TIMEOUT ? "TIMEOUT" : "UNKNOWN";
+        cout << "_solve RETURNED: " << res_string << " (for selectors up to: " << next_selector_to_activate - first_selector << ")" << endl;
+    }
+
+    switch (res) {
+        case SolverState::UNSAT:
+        case SolverState::TIMEOUT:
+            return res;
+        case SolverState::SAT: {
+            if (next_selector_to_activate > nvars) return res;
+            Var selector = next_selector_to_activate++;
+            restart();
+            assert_lit(v2l(selector));
+            SolverState next_res = incremental_solve();
+            return next_res;
+        }
+        default: throw std::exception("Unknown result");
+    }
 }
 
 SolverState Solver::_solve() {

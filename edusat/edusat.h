@@ -236,6 +236,9 @@ class Solver {
 	Lit 		asserted_lit;
 
 	float restart_multiplier;
+
+    Var first_selector;
+    Var next_selector_to_activate;
 	
 	// access	
 	int get_learned() { return num_learned; }
@@ -288,6 +291,8 @@ public:
 
     /* Solves the loaded CNF. */
 	SolverState _solve();
+    /* Solves the loaded CNF. */
+	SolverState incremental_solve();
     /* Solves and also prints the solution. */
 	void solve();
 
