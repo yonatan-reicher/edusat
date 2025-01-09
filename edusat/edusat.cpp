@@ -600,31 +600,32 @@ void Solver::solve() {
 }
 
 SolverState Solver::incremental_solve() {
-    if (verbose_now()) cout << "SELECTORS: up to " << next_selector_to_activate - first_selector << endl;
-	SolverState res = _solve(); 	
-	Assert(res == SolverState::SAT || res == SolverState::UNSAT || res == SolverState::TIMEOUT);
+    while (true) {
+        if (verbose_now()) cout << "SELECTORS: up to " << next_selector_to_activate - first_selector << endl;
+        SolverState res = _solve(); 	
+        Assert(res == SolverState::SAT || res == SolverState::UNSAT || res == SolverState::TIMEOUT);
 
-    if (verbose_now()) {
-        const char* res_string = 
-            res == SolverState::SAT ? "SAT" : 
-            res == SolverState::UNSAT ? "UNSAT" : 
-            res == SolverState::TIMEOUT ? "TIMEOUT" : "UNKNOWN";
-        cout << "_solve RETURNED: " << res_string << " (for selectors up to: " << next_selector_to_activate - first_selector << ")" << endl;
-    }
-
-    switch (res) {
-        case SolverState::UNSAT:
-        case SolverState::TIMEOUT:
-            return res;
-        case SolverState::SAT: {
-            if (next_selector_to_activate > nvars) return res;
-            Var selector = next_selector_to_activate++;
-            restart();
-            assert_lit(v2l(selector));
-            SolverState next_res = incremental_solve();
-            return next_res;
+        if (verbose_now()) {
+            const char* res_string = 
+                res == SolverState::SAT ? "SAT" : 
+                res == SolverState::UNSAT ? "UNSAT" : 
+                res == SolverState::TIMEOUT ? "TIMEOUT" : "UNKNOWN";
+            cout << "_solve RETURNED: " << res_string << " (for selectors up to: " << next_selector_to_activate - first_selector << ")" << endl;
         }
-        default: throw std::exception("Unknown result");
+
+        switch (res) {
+            case SolverState::UNSAT:
+            case SolverState::TIMEOUT:
+                return res;
+            case SolverState::SAT: {
+                if (next_selector_to_activate > nvars) return res;
+                Var selector = next_selector_to_activate++;
+                restart();
+                assert_lit(v2l(selector));
+                continue;
+            }
+            default: throw std::exception("Unknown result");
+        }
     }
 }
 
