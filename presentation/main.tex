@@ -1,0 +1,88 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{palatino}
+\usepackage{ulem}
+
+\title{Jonathan's \emph{Incremental} (Edu)SAT Solver}
+\author{Jonathan Reicher}
+\institute{Technion}
+\date{2025}
+
+\begin{document}
+
+\frame{ \titlepage }
+
+\begin{frame}
+    \frametitle{Introduction}
+    For this project, I have decided to extend EduSAT to support incremental
+    SAT solving. Incremental SAT solving are useful for:
+    \begin{itemize}
+        \item Evolving problems.
+        \item Reachability \& Search (e.g. model checking - very interesting).
+        \item Optimization (e.g. Find a solution. Now find a solution that is better).
+        \item And more.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Main Challenges}
+    \begin{itemize}
+        \item Need to support a new interface (adding, removing, disabling clauses).
+        \item How to enable/disable clauses.
+        \item Testing.
+    \end{itemize}
+    This are the main challenges I faced in the project so far. I will present
+    the current state of handling each challenge.
+\end{frame}
+
+\begin{frame}
+    \frametitle{The New Interface}
+    \begin{itemize}
+        \item void read\_cnf(ifstream\& in);
+        \item Key addClause(const vector<int>\& clause);
+        \item \only<1>{void removeClause(Key key);} \only<2->{\sout{void removeClause(Key key);}}
+        \item void enableClause(Key key);
+        \item void disableClause(Key key);
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{How to Enable/Disable Clauses}
+    \begin{itemize}
+        \item<2-> We have seen this!
+        \item<3-> Add an \emph{assumption} (selector) variables. These are variables that
+            are set to true when to enable a specific clause.
+            $$
+            (x_1 \lor x_2 \lor \dots \lor x_n)
+            \underset{becomes}{\Longrightarrow}
+            (\neg t_1 \lor x_1 \lor x_2 \dots \lor x_n)
+            $$
+            Force $t_1$ to true to enable this clause.
+        \item<4-> Need to add special treatment for assumptions in the solver.
+            In particular, when adding a clause we add an assumption, and keep
+            track of all assumptions, and force some assumptions to be true.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Testing}
+    How do I know that my implementation does not have a bug?
+    \begin{itemize}
+        \item Ipasir - from the famous SAT competition.
+        \item Dealt with two kinds of bugs: Performance and correctness.
+    \end{itemize}
+    Invariant: EduSAT Incremental accepts $\iff$ EduSAT accepts.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Future Work}
+    \begin{itemize}
+        \item Run Azure
+        \item Run all of Ipasir's tests.
+        \item Add more features.
+    \end{itemize}
+\end{frame}
+
+\end{document}
